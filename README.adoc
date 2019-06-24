@@ -1,0 +1,45 @@
+This is an example project to reproduce a bug in Spotless originally reported at https://github.com/diffplug/spotless/issues/391.
+
+== Reproduction
+Clone the repository, open a shell and run:
+
+[source,console]
+----
+./mvnw clean verify -Pdocker
+----
+
+IMPORTANT: The Maven Wrapper is configured to run with version 3.3.9 to reproduce the issue
+
+After the Docker image is built, the build will fail with the following:
+
+[source,console]
+----
+[INFO] --- spotless-maven-plugin:1.21.1:check (check) @ demo ---
+[WARNING] Error injecting: com.diffplug.spotless.maven.SpotlessCheckMojo
+com.google.inject.ProvisionException: Unable to provision, see the following errors:
+
+1) Error injecting: private org.eclipse.aether.spi.log.Logger org.apache.maven.repository.internal.DefaultVersionRangeResolver.logger
+  while locating org.apache.maven.repository.internal.DefaultVersionRangeResolver
+  while locating java.lang.Object annotated with *
+  at org.eclipse.sisu.wire.LocatorWiring
+  while locating org.eclipse.aether.impl.VersionRangeResolver
+    for parameter 2 at org.eclipse.aether.internal.impl.DefaultDependencyCollector.<init>(Unknown Source)
+  while locating org.eclipse.aether.internal.impl.DefaultDependencyCollector
+  while locating java.lang.Object annotated with *
+  at org.eclipse.sisu.wire.LocatorWiring
+  while locating org.eclipse.aether.impl.DependencyCollector
+    for parameter 5 at org.eclipse.aether.internal.impl.DefaultRepositorySystem.<init>(Unknown Source)
+  while locating org.eclipse.aether.internal.impl.DefaultRepositorySystem
+  while locating java.lang.Object annotated with *
+  while locating com.diffplug.spotless.maven.SpotlessCheckMojo
+Caused by: java.lang.IllegalArgumentException: Can not set org.eclipse.aether.spi.log.Logger field org.apache.maven.repository.internal.DefaultVersionRangeResolver.logger to org.eclipse.aether.internal.impl.slf4j.Slf4jLoggerFactory
+	at sun.reflect.UnsafeFieldAccessorImpl.throwSetIllegalArgumentException(UnsafeFieldAccessorImpl.java:167)
+	at sun.reflect.UnsafeFieldAccessorImpl.throwSetIllegalArgumentException(UnsafeFieldAccessorImpl.java:171)
+	at sun.reflect.UnsafeObjectFieldAccessorImpl.set(UnsafeObjectFieldAccessorImpl.java:81)
+	at java.lang.reflect.Field.set(Field.java:764)
+	at org.eclipse.sisu.bean.BeanPropertyField.set(BeanPropertyField.java:72)
+----
+
+== Resolution
+
+Candidate solution is posted at https://github.com/diffplug/spotless/pull/397, or simply update to the latest version of Maven.
